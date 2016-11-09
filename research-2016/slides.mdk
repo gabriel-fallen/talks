@@ -1,0 +1,97 @@
+[INCLUDE=presentation]
+Title         : Research topics
+Sub Title     : I Have Known And Loved
+Author        : Alexander Tchitchigin
+Affiliation   : Innopolis University
+Email         : a.chichigin@innopolis.ru
+Reveal Theme  : serif
+Beamer Theme  : singapore
+
+[TITLE]
+
+# Content
+
+[TOC]
+
+~ Begin Vertical
+
+# Static Type System for Jolie
+
+* Microservices
+* External vs. Internal
+* Thesis by Julie Meinicke Nielsen
+* Refinement types with strings
+
+-------------------------
+
+Tchitchigin, Alexander, Larisa Safina, Manuel Mazzara, Mohamed Elwakil, Fabrizio Montesi, and Victor Rivera. "Refinement types in Jolie."
+
+
+## Proovably Correct Typechecker
+
+* More-or-less direct implementation of a type system from the thesis
+* {.fragment} In Agda
+* {.fragment} By Eugene Aken'tev
+
+## SMT-based Typechecker
+
+* Good for refinements --- good for everything!
+* Based on the thesis but needs adjustments
+* By Bogdan Mingela and Nikolay Troshkov
+
+~ End Vertical
+
+
+~ Begin Vertical
+
+# BioDynaMo
+
+* Biological cells simulations with mechanical, chemical and electrical interactions
+* Brain simulations (from ~10^7^ to ~10^9^ cells)
+* Collaboration of Newcastle, CERN, Innopolis and KFU
+
+## Subprojects
+
+* Optimized simulation engine
+* Cloud HPC framework
+* Visualization engine
+
+## Cloud HPC framework
+
+* Simulation
+* Evaluation
+* Prototype
+
+~ End Vertical
+
+
+~ Begin Vertical
+
+# Emotions of a Machine
+
+* Machine Consciousness Lab of ITIS KFU (Dr. Max Talanov)
+* HCI, Goal setting, Curiosity, Resource allocation
+* Irrational behaviour modeling, Depression, etc.
+
+## NEUCOGAR
+
+* "Cube of Emotions" by Hugo Loveheim
+* Realistic Spiking Neural Network with Neuromodulation
+* Rat brain model
+
+## Robot Dream
+
+* Robot + Emotions
+* Real-time + Ahead-of-time
+* "Bisimulation"
+* Rule translation
+
+
+~ End Vertical
+
+
+# Thanks for your attention!
+
+### Questions?
+
+
