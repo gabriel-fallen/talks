@@ -62,6 +62,26 @@ Tchitchigin, Alexander, Larisa Safina, Manuel Mazzara, Mohamed Elwakil, Fabrizio
 * Evaluation
 * Prototype
 
+## Simulation
+
+* Simulation of a Simulator
+* Easily try different architectures
+* In Go programming language
+* By Alexey Kosterin
+
+## Evaluation
+
+* Cassandra, Redis, Riak, Kafka, Zookeeper, etc(d)
+* Consistent *enough*? *That* scalable?
+* By Anthony Bykov
+
+## Prototype
+
+* Parallel Universe's Galaxy
+* Coherent, data-local, replicated, fault-tolerant
+* But how performant and scalable?
+* By Alexey Chernyshov
+
 ~ End Vertical
 
 
@@ -93,5 +113,28 @@ Tchitchigin, Alexander, Larisa Safina, Manuel Mazzara, Mohamed Elwakil, Fabrizio
 # Thanks for your attention!
 
 ### Questions?
+
+
+# Reveal.js
+
+`reveal.js` is a framework for easily creating beautiful presentations using
+HTML. You'll need a browser with support for CSS 3D transforms to see it in
+its full glory. 
+
+And any Madoko features just work. Here is some math:
+
+~ Begin Framed { padding:1ex; margin-top:1ex }
+A famous equation is $e = mc^2$, but this one is 
+famous too:
+
+~ Equation  {#eq-gaussian}
+\int_{-\infty}^\infty e^{-a x^2} d x = \sqrt{\frac{\pi}{a}} 
+~
+~ End Framed
+
+~~ Notes
+Oh hey, these are some notes. They'll be hidden in your presentation, but you
+can see them if you open the speaker notes window (hit 's' on your keyboard).
+~~
 
 
