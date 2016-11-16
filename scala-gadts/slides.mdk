@@ -1,0 +1,70 @@
+[INCLUDE=presentation]
+Title         : Scala GADTs
+Sub Title     : For Correct-by-Construction Interpreter
+Author        : Alexander Tchitchigin
+Affiliation   : Innopolis University
+Email         : a.chichigin@innopolis.ru
+Reveal Theme  : serif
+Beamer Theme  : singapore
+
+[TITLE]
+
+# Content
+
+[TOC]
+
+~ Begin Vertical
+
+# Algebraic Datatypes
+
+Using [Madoko] it is easy to create beautiful presentations.
+
+
+## ADTs in Scala
+
+## Generalized ADTs
+
+## GADTs in Scala
+
+~ End Vertical
+
+
+~ Begin Vertical
+
+# ADTs and ASTs
+
+## Well-formedness with GADTs
+
+~ End Vertical
+
+
+## Code
+
+Here is code, highlighted by Madoko 
+
+``` javascript
+function sqr( x ) {
+  var \(&pi;\) = 3.141593;
+  return x*x;  /* the square */
+}
+```
+We used `\(` and `\)` to escape into markdown to write &pi;.
+
+
+
+## Pauses?
+
+Some pauses.
+
+* {.fragment} One
+* {.fragment} Two
+* {.fragment} Three
+
+And more:
+
+- Test 1
+- Test 2
+- Test 3
+{.fragmented}
+
+Cool!.
