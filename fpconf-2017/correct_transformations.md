@@ -23,10 +23,6 @@
 
 > Equational reasoning is the method of manipulating structures such as formulas and expressions. The basic idea is that equals can be replaced by equals in any context.
 
-<br />
-
-R. Bird, _Pearls of Functional Algorithm Design_. Cambridge: Cambridge University Press, 2010.
-
 ---
 
 # Fusion Laws
@@ -39,9 +35,25 @@ filter p . filter q = filter (\x -> q x && p x)
 filter p . map f = map f . filter (p . f)
 ```
 
-<br />
+```haskell
+(.)    :: (b -> c) -> (a -> b) -> (a -> c)
+map    :: (a -> b) -> [a] -> [b]
+filter :: (a -> Bool) -> [a] -> [a]
+```
 
 <small>Nils Anders Danielsson, John Hughes, Patrik Jansson, Jeremy Gibbons. _Fast and Loose Reasoning is Morally Correct_</small>
+
+---
+<!-- *template: invert -->
+
+# And that's not all
+
+R. Bird, _Pearls of Functional Algorithm Design_. Cambridge: Cambridge University Press, 2010.
+
+### Favorite chapters
+
+* 16 &mdash; The Boyerâ€“Moore algorithm
+* 17 &mdash; The Knuthâ€“Morrisâ€“Pratt algorithm
 
 ---
 
@@ -104,12 +116,24 @@ treesort ds xs = flatten $ mktree ds xs
 ## Preparations
 
 ```haskell
+treesort ds xs = flatten $ mktree ds xs
+```
+
+:arrow_down:
+
+```haskell
 treesort ds = flatten . mktree ds
 ```
 
 ---
 
 ## Preparations
+
+```haskell
+treesort ds  = flatten . mktree ds
+```
+
+:arrow_down:
 
 ```haskell
 treesort = (flatten .) . mktree
@@ -209,7 +233,7 @@ treesort = foldr ft et
 # Problems with Liquid Haskell
 
 * Refinement Reflection is great but WIP
-* No support for Type Classes yet
+* No support for Type Classes
 * No support for anonimous functions
 * (Were) No standard library of reflected definitions
 
@@ -223,7 +247,7 @@ treesort = foldr ft et
 
 ---
 
-# Isabelle for the Resque
+# Isabelle for the Rescue
 
 * Proving theorems since 1986
 * Good 'ol Math Logic (Higher-Order though)
@@ -236,15 +260,39 @@ treesort = foldr ft et
 
 ---
 
-## How a Proof Looks
+## What a Proof Looks Like
 
 ## ![treesort = radixsort](radixsort_proof.png)
 
 ---
 
-## How a Verified Proof Looks
+## It Looks Like a Bit Like This
+
+## ![How to draw an Owl](how_to_draw_an_owl.jpg)
+
+---
+
+## What a Verified Proof Looks Like
 
 ## ![filter p . flatten = flatten . mapt (filter p)](filter_flatten.png)
+
+---
+
+## Equational Reasoning
+
+## ![filter p . flatten = flatten . mapt (filter p)](filter_flatten_equational.png)
+
+---
+
+## Structural Proofs
+
+## ![filter p . flatten = flatten . mapt (filter p)](filter_flatten_structural.png)
+
+---
+
+## Structural Induction
+
+## ![filter p . flatten = flatten . mapt (filter p)](filter_flatten_induction.png)
 
 ---
 
@@ -337,6 +385,14 @@ treesort = radixsort;
 # Future Work
 
 * Generalize back to `(Enum b, Bounded b)`
+* Even better Haskell output
+* More complex algorithms and proofs
+
+---
+
+# My Conclusions
+
+## For pure algorithms it's totally doable but you have to get used to it. So better start practicing now! :smile:
 
 ---
 <!-- *template: invert -->
@@ -350,6 +406,14 @@ treesort = radixsort;
 # Isabelle Listing
 
 ### https://gist.github.com/gabriel-fallen/d4f2a79e88f14a9be3e1ec6beeadca1b
+
+---
+
+# References
+
+* [Isabelle](http://isabelle.in.tum.de/)
+* [Liquid Haskell](https://ucsd-progsys.github.io/liquidhaskell-blog/)
+* [F*](fstar-lang.org)
 
 ---
 
