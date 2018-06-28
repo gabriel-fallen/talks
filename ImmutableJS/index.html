@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Immutable Game</title>
+  <meta charset="utf-8">
+  <style>
+    canvas {
+      position: absolute;
+    }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/immutable/3.8.2/immutable.min.js"></script>
+  <script src="lib.js"></script>
+</head>
+<body onload="init();">
+    <div style="margin-left: auto;margin-right: auto;width: 500px;">
+      <p><strong>Health:</strong>&nbsp;<span id="health">0</span></p>
+    </div>
+  <div style="margin-left: auto;margin-right: auto;width: 500px;">
+    <canvas id="background" width="500" height="500"></canvas>
+    <canvas id="foreground" width="500" height="500"></canvas>
+  </div>
+  <div style="display:none;">
+    <img id="hero" src="img/guard.png" />
+    <img id="snake" src="img/snake.png" />
+    <img id="ogre" src="img/ogre.png" />
+  </div>
+  <script type="text/javascript">
+    // global state
+    let entities = undefined;
+    let leftPressed = false,
+        rightPressed = false,
+        upPressed = false,
+        downPressed = false;
+    
+    function keyDownHandler(event) {
+      if(event.keyCode == 39) {
+        rightPressed = true;
+      }
+      else if(event.keyCode == 37) {
+        leftPressed = true;
+      }
+      if(event.keyCode == 40) {
+        downPressed = true;
+      }
+      else if(event.keyCode == 38) {
+        upPressed = true;
+      }
+    }
+
+    function keyUpHandler(event) {
+      if(event.keyCode == 39) {
+        rightPressed = false;
+      }
+      else if(event.keyCode == 37) {
+        leftPressed = false;
+      }
+      if(event.keyCode == 40) {
+        downPressed = false;
+      }
+      else if(event.keyCode == 38) {
+        upPressed = false;
+      }
+    }
+
+    function render_loop(ctx, health_tag) {
+      // redraw entities
+      ctx.clearRect(0, 0, GAME_SIZE, GAME_SIZE);
+      entities.forEach((entity) => draw_entity(ctx, entity));
+
+      // update UI
+      health_tag.innerHTML = entities.getIn([0, "health"], 0);
+
+      // loop
+      window.requestAnimationFrame(() => render_loop(ctx, health_tag));
+    }
+
+    function init() {
+      const { List, fromJS } = window.Immutable;
+
+      const canvas_bg = document.getElementById('background');
+      const ctx_bg    = canvas_bg.getContext('2d');
+      const canvas_fg = document.getElementById('foreground');
+      const ctx_fg    = canvas_fg.getContext('2d');
+
+      const health_tag = document.getElementById('health');
+
+      const img_hero  = document.getElementById('hero');
+      const img_snake = document.getElementById('snake');
+      const img_ogre  = document.getElementById('ogre');
+
+      const hero = fromJS({
+        name: "Beowulf",
+        health: 100,
+        weapon: {
+          type: "sword",
+          damage: 80
+        },
+        x: 5,
+        y: 9,
+        image: img_hero,
+        imageX: 0,
+        imageY: 0,
+        imageH: 50,
+        imageW: 50
+      });
+
+      const snake1 = fromJS({
+        health: 50,
+        weapon: {
+          type: "bite",
+          damage: 10
+        },
+        x: 2,
+        y: 4,
+        image: img_snake,
+        imageX: 0,
+        imageY: 0,
+        imageH: 50,
+        imageW: 50
+      });
+
+      const snake2 = fromJS({
+        health: 50,
+        weapon: {
+          type: "bite",
+          damage: 10
+        },
+        x: 7,
+        y: 6,
+        image: img_snake,
+        imageX: 0,
+        imageY: 0,
+        imageH: 50,
+        imageW: 50
+      });
+
+      const ogre = fromJS({
+        health: 120,
+        weapon: {
+          type: "club",
+          damage: 70
+        },
+        x: 4,
+        y: 1,
+        image: img_ogre,
+        imageX: 0,
+        imageY: 770,
+        imageH: 80,
+        imageW: 80
+      });
+
+      entities = List.of(hero, snake1, snake2, ogre);
+
+      // handle input
+      document.addEventListener('keydown', keyDownHandler, false);
+      document.addEventListener('keyup', keyUpHandler, false);
+
+      // fill the background
+      ctx_bg.fillStyle = 'green';
+      ctx_bg.fillRect(0, 0, GAME_SIZE, GAME_SIZE);
+
+      window.setInterval(() => {
+        entities = update_game(entities, leftPressed, rightPressed, upPressed, downPressed);
+      }, 200);
+      window.requestAnimationFrame(() => render_loop(ctx_fg, health_tag));
+    }
+  </script>
+</body>
+</html>

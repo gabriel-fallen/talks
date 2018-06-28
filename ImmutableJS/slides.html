@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Immutable.JS basics</title>
+    <meta charset="utf-8">
+    <style>
+      @import url(https://fonts.googleapis.com/css?family=Yanone+Kaffeesatz);
+      @import url(https://fonts.googleapis.com/css?family=Droid+Serif:400,700,400italic);
+      @import url(https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700,400italic);
+
+      body { font-family: 'Droid Serif'; }
+      h1, h2, h3 {
+        font-family: 'Yanone Kaffeesatz';
+        font-weight: normal;
+      }
+      .remark-code, .remark-inline-code { font-family: 'Ubuntu Mono'; }
+    </style>
+  </head>
+  <body>
+    <textarea id="source">
+
+class: center, middle
+
+# Immutable.JS
+
+### Alexander Tchitchigin
+
+---
+
+# What is Immutable.JS?
+
+--
+count: false
+
+* Collections library (`List`, `[Ordered]Map`, `[Ordered]Set`, `Seq`)
+
+--
+count: false
+
+* Unified API
+
+--
+count: false
+
+* Persistent data structures
+
+--
+count: false
+
+* Value-based euality etc.
+
+---
+
+# Why Immutable.JS?
+
+--
+count: false
+
+* Efficient undo
+
+--
+count: false
+
+* Copy without cloning
+
+--
+count: false
+
+* `mergeDeep()`
+
+--
+count: false
+
+* Fast diff
+
+---
+
+# Getting started
+
+--
+count: false
+
+### with Node.js
+
+```sh
+npm install immutable
+```
+
+---
+
+# Getting started
+
+### in a browser
+
+```html
+<script src="https://cdnjs.cloudflare.com/ajax/libs/immutable/3.8.2/immutable.min.js"></script>
+```
+
+---
+
+# Map
+
+--
+count: false
+
+### construction
+
+```javascript
+import { Map } from "immutable";
+
+const hero = Map({
+  name: "Beowulf",
+  "class": "warrior",
+  health: 100
+});
+```
+
+---
+
+# Map
+
+### value access
+
+```javascript
+const health = hero.get("health");
+```
+
+--
+
+```javascript
+const sword = Map({
+  type: "sword",
+  damage: 50,
+  durability: 100
+});
+
+const armed_hero = hero.set("weapon", sword);
+```
+
+---
+
+# Map
+
+### update
+
+```javascript
+function take_damage(hero, damage) {
+  return hero.update("health", (health) => health - damage);
+}
+```
+
+---
+
+# List
+
+--
+count: false
+
+### construction
+
+```javascript
+import { List } from "immutable";
+
+const entities = List([hero, door1, door2, snake, ork, troll]);
+```
+
+--
+
+```javascript
+const entities = List.of(hero, door1, door2, snake, ork, troll);
+```
+
+---
+
+# List
+
+### value access
+
+```javascript
+const ork = entities.get(4);
+```
+
+--
+
+```javascript
+const ork_updated = ork.set("health", 150);
+
+const entities_updated = entities.set(4, ork_updated);
+```
+
+---
+
+# List
+
+### update
+
+```javascript
+const entities_updated = entities.update(4, (ork) => ork.set("health", 150));
+```
+
+---
+
+# List
+
+### array methods
+
+```javascript
+List([ 1, 2, 3, 4 ]).push(5)
+// List [ 1, 2, 3, 4, 5 ]
+
+List([ 1, 2, 3, 4 ]).pop()
+// List [ 1, 2, 3 ]
+
+List([ 2, 3, 4]).unshift(1);
+// List [ 1, 2, 3, 4 ]
+
+List([ 0, 1, 2, 3, 4 ]).shift();
+// List [ 1, 2, 3, 4 ]
+```
+
+---
+
+# List
+
+### length
+
+```javascript
+const len = entities.size; // 6
+```
+
+---
+
+# List
+
+### HOF
+
+```javascript
+const monsters = entities.filter((entity) => entity.get("class") === "monster");
+```
+
+--
+count: false
+
+```javascript
+function damage_all(entities, damage) {
+  return entities.map((entity) =>
+    (entity.has("health")) ?
+      entity.update("health", (health) => health - damage) :
+      entity);
+}
+```
+
+--
+count: false
+
+```javascript
+function sum(collection) {
+  return collection.reduce((sum, x) => sum + x, 0)
+}
+```
+
+---
+
+# JSON (de)serialization
+
+```javascript
+import { Map, List } from "immutable";
+const deep = Map({ a: 1, b: 2, c: List([ 3, 4, 5 ]) });
+console.log(deep.toObject());  // { a: 1, b: 2, c: List [ 3, 4, 5 ] }
+console.log(deep.toJS());      // { a: 1, b: 2, c: [ 3, 4, 5 ] }
+JSON.stringify(deep);          // '{"a":1,"b":2,"c":[3,4,5]}'
+```
+
+--
+count: false
+
+```javascript
+import { Map, fromJS } from "immutable";
+const deep = fromJS({ a: 1, b: 2, c: [ 3, 4, 5 ] });
+// Map { a: 1, b: 2, c: List [ 3, 4, 5 ] }
+const half_deep = Map({ a: 1, b: 2, c: [ 3, 4, 5 ] });
+// Map { a: 1, b: 2, c: [ 3, 4, 5 ] }
+```
+
+---
+
+# Nested structures
+
+```javascript
+const hero = fromJS({
+  name: "Beowulf",
+  "class": "warrior",
+  health: 100,
+  weapon: {
+    type: "sword",
+    damage: 50,
+    durability: 100
+  }
+});
+
+```
+
+--
+count: false
+
+```javascript
+function get_damage(character) {
+  return character.getIn(["weapon", "damage"], 10); // default damage is 10
+}
+```
+
+--
+count: false
+
+```javascript
+function set_damage(character, damage) {
+  return character.setIn(["weapon", "damage"], damage);
+}
+```
+
+---
+
+# Lists too
+
+```javascript
+function damage_hero(entities, damage) {
+  return entities.updateIn([0, "health"], (health) => health - damage);
+}
+```
+
+--
+count: false
+
+### ... and that's all the basics! :)
+
+---
+
+# References
+
+* [Immutable.JS](https://facebook.github.io/immutable-js/)
+* [Sources](https://github.com/facebook/immutable-js/)
+* [CDNJS page](https://cdnjs.com/libraries/immutable)
+
+---
+
+# Why a game?
+
+--
+count: false
+
+* A simulation
+* New state from old one
+* Local changes
+* It's fun :)
+
+---
+class: center, middle
+
+# Demo
+
+---
+class: center, middle
+
+# Thanks for your attention!
+
+### Questions?
+
+
+    </textarea>
+    <script src="https://remarkjs.com/downloads/remark-latest.min.js">
+    </script>
+    <script>
+      var slideshow = remark.create();
+    </script>
+  </body>
+</html>
