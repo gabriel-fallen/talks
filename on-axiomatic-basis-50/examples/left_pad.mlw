@@ -1,0 +1,27 @@
+module LeftPad
+
+use int.Int
+use string.Char
+use string.String
+
+predicate starts_with (s: string) (c: char) (len: int) =
+  forall i: int. 0 <= i < len -> s[i] = c
+
+predicate left_padded (s orig: string) (c: char) =
+  let pad = length s - length orig in
+  starts_with s c pad /\ forall i: int. 0 <= i < length orig -> s[pad + i] = orig[i]
+
+let left_pad (s: string) (c: char) (len: int) : string
+  requires { len > length s }
+  ensures  { left_padded result s c }
+=
+  let pad = len - length s in
+  let res = make len c in
+  for i = 0 to length s - 1 do
+    invariant { forall j: int. 0 <= j < pad -> res[j] = c }
+    invariant { forall j: int. 0 <= j < i -> res[pad + j] = s[j] }
+    set res (pad + i) (get s i);
+  done;
+  res
+
+end
