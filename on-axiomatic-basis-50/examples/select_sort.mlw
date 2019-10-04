@@ -1,0 +1,48 @@
+module SelectSort
+
+use int.Int
+use ref.Ref
+use array.Array
+
+predicate sorted (a: array int) =
+  forall i j. 0 <= i <= j < length a -> a[i] <= a[j]
+
+let min_index (a: array int) (start: int) : int
+  requires { 0 <= start < length a }
+  ensures  { start <= result < length a }
+  ensures  { forall i. start <= i < length a -> a[result] <= a[i] }
+=
+  let min = ref a[start] in
+  let idx = ref start in
+  for i = start + 1 to length a - 1 do
+    invariant { forall k. start <= k < i -> !min <= a[k] }
+    invariant { start <= !idx < i }
+    invariant { a[!idx] = !min }
+    assert { start < i < length a };
+    if !min > a[i] then begin
+      min := a[i];
+      idx := i;
+    end;
+  done;
+  !idx
+
+let swap (a: array int) (i j: int)
+  requires { 0 <= i <= j < length a }
+  ensures  { old a[i] = a[j] /\ old a[j] = a[i] }
+  ensures  { forall k. k <> i /\ k <> j -> old a[k] = a[k] }
+=
+  let t = a[j] in
+  a[j] <- a[i];
+  a[i] <- t
+
+let select_sort (a: array int)
+  ensures { sorted a }
+=
+  for i = 0 to length a - 1 do
+    invariant { forall k l. 0 <= k <= l < i -> a[k] <= a[l] }
+    invariant { forall k l. 0 <= k < i /\ i <= l < length a -> a[k] <= a[l] }
+    let idx = min_index a i in
+    swap a i idx
+  done
+
+end

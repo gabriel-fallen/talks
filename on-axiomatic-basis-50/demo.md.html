@@ -1,0 +1,511 @@
+<meta charset="utf-8" lang="en">
+
+<style>
+.md code > .large-code-font  { font-size: large;  line-height: 120%; }
+.md code > .medium-code-font { font-size: medium; line-height: 120%; }
+.md code > .small-code-font  { font-size: small;  line-height: 120%; }
+</style>
+
+
+**50 Years of Axiomatic Basis for Computer Programming**
+
+Alexander Tchitchigin<br>
+*Positive Technologies*<br>
+<small><em>October, 2019</em></small>
+
+---
+
+## Sir C. A. R. Hoare
+
+![](images/Sir_Tony_Hoare_IMG_5125.jpg style="height: 12rem")
+
+<small>Photograph by Rama, Wikimedia Commons, CC BY-SA 2.0 fr, https://commons.wikimedia.org/w/index.php?curid=15568323</small>
+
+---
+
+### The paper
+
+![](images/axiomatic_reasoning_paper_page1.jpg style="height: 12rem")
+
+---
+
+### Hoare Triples
+
+$$
+\dfrac{\{P\} S \{Q\} \quad \{Q\} T \{R\}}{\{P\} S;T \{R\}}
+$$
+
+---
+
+## Edsger Wybe Dijkstra
+
+![](images/Edsger_Wybe_Dijkstra.jpg style="height: 12rem")
+
+<small>By Hamilton Richards - manuscripts of Edsger W. Dijkstra, University Texas at Austin, CC BY-SA 3.0, https://commons.wikimedia.org/w/index.php?curid=4204157</small>
+
+---
+
+### Weakest Precondition Calculus
+
+Defines **Predicate transformer** $\mathrm{WP}(e, Q)$ where
+
+* $e$ is an expression (or statement)
+* $Q$ is a postcondition
+
+such that $\{\mathrm{WP}(e, Q)\} \: e \: \{Q\}$
+
+---
+
+### Sequence rule again
+
+$$
+\dfrac{\{P\} S \{Q\} \quad \{Q\} T \{R\}}{\{P\} S;T \{R\}}
+$$
+
+$$
+\mathrm{WP}(e1;e2, Q) \equiv \mathrm{WP}(e1, \mathrm{WP}(e2, Q))
+$$
+
+---
+
+### The point is
+
+To show that $\{P\} \: e \: \{Q\}$ is valid, it suffices to prove $P \rightarrow \mathrm{WP}(e, Q)$.
+
+---
+
+### Extensions
+
+* Termination checking (loop and recursion *variants*)
+* (Global) mutable variables (read/write set)
+* Aliasing (separation logic)
+* Exceptions (exceptional postconditions)
+
+---
+
+## Modern Systems
+
+* Facebook Infer
+* Eiffel
+* Dafny
+* F*
+* Why3
+
+---
+
+# Why3
+
+---
+
+## WhyML
+
+* Functional language
+* Imperative language
+* Specification language
+* Proof language (to a lesser degree)
+
+---
+
+## Back-ends
+
+<style>
+.md code > .list-prover-families  { font-size: large; line-height: 120%; }
+</style>
+
+```shell list-prover-families
+$ why3 config --list-prover-families
+Known prover families:
+  alt-ergo
+  beagle
+  coq
+  cvc3
+  cvc4
+  cvc4-ce
+  eprover
+  gappa
+  iprover
+  isabelle
+  mathematica
+  mathsat
+  metis
+  metitarski
+  polypaver
+  princess
+  psyche
+  pvs
+  simplify
+  spass
+  vampire
+  verit
+  yices
+  yices-smt2
+  z3
+  z3-ce
+  z3-nobv
+  zenon
+  zenon_modulo
+```
+
+---
+
+# Examples
+
+---
+
+## Left pad
+
+> Leftpad. Takes a padding character, a string, and a total length,
+> returns the string padded to that length with that character.
+> If length is less than the length of the string, does nothing.
+
+---
+
+### Specification
+
+```haskell
+predicate left_padded (s: string) (c: char) (len: int) =
+  forall i: int. 0 <= i < len -> s[i] = c
+```
+
+---
+
+### Specification
+
+```haskell
+predicate starts_with (s: string) (c: char) (len: int) =
+  forall i: int. 0 <= i < len -> s[i] = c
+
+predicate left_padded (s orig: string) (c: char) =
+  let pad = length s - length orig in
+  starts_with s c pad /\ forall i: int. 0 <= i < length orig -> s[pad + i] = orig[i]
+```
+
+---
+
+### Implementation
+
+```haskell linenumbers
+let left_pad (s: string) (c: char) (len: int) : string =
+  let pad = len - length s in
+  let res = make len c in
+  for i = 0 to length s - 1 do
+    set res (pad + i) (get s i);
+  done;
+  res
+```
+
+---
+
+### Implementation
+
+```haskell linenumbers
+let left_pad (s: string) (c: char) (len: int) : string
+  ensures  { left_padded result s c }
+=
+  let pad = len - length s in
+  let res = make len c in
+  for i = 0 to length s - 1 do
+    set res (pad + i) (get s i);
+  done;
+  res
+```
+
+---
+
+### Implementation
+
+```haskell linenumbers
+let left_pad (s: string) (c: char) (len: int) : string
+  requires { len > length s }
+  ensures  { left_padded result s c }
+=
+  let pad = len - length s in
+  let res = make len c in
+  for i = 0 to length s - 1 do
+    set res (pad + i) (get s i);
+  done;
+  res
+```
+
+---
+
+### Implementation
+
+```haskell linenumbers
+let left_pad (s: string) (c: char) (len: int) : string
+  requires { len > length s }
+  ensures  { left_padded result s c }
+=
+  let pad = len - length s in
+  let res = make len c in
+  for i = 0 to length s - 1 do
+    invariant { forall j: int. 0 <= j < pad -> res[j] = c }
+    set res (pad + i) (get s i);
+  done;
+  res
+```
+
+---
+
+### Implementation
+
+```haskell linenumbers
+let left_pad (s: string) (c: char) (len: int) : string
+  requires { len > length s }
+  ensures  { left_padded result s c }
+=
+  let pad = len - length s in
+  let res = make len c in
+  for i = 0 to length s - 1 do
+    invariant { forall j: int. 0 <= j < pad -> res[j] = c }
+    invariant { forall j: int. 0 <= j < i -> res[pad + j] = s[j] }
+    set res (pad + i) (get s i);
+  done;
+  res
+```
+
+---
+
+## Selection sort
+
+Just for an array of integer values for clarity.
+
+---
+
+### Specification
+
+```haskell
+predicate sorted (a: array int) =
+  forall i j. 0 <= i <= j < length a -> a[i] <= a[j]
+```
+
+---
+
+### Implementation (index of a minimum)
+
+```haskell linenumbers
+let min_index (a: array int) (start: int) : int
+=
+  let min = ref a[start] in
+  let idx = ref start in
+  for i = start + 1 to length a - 1 do
+    if !min > a[i] then begin
+      min := a[i];
+      idx := i;
+    end;
+  done;
+  !idx
+```
+
+---
+
+### Implementation (index of a minimum)
+
+```haskell linenumbers
+let min_index (a: array int) (start: int) : int
+  ensures  { forall i. start <= i < length a -> a[result] <= a[i] }
+=
+  let min = ref a[start] in
+  let idx = ref start in
+  for i = start + 1 to length a - 1 do
+    if !min > a[i] then begin
+      min := a[i];
+      idx := i;
+    end;
+  done;
+  !idx
+```
+
+---
+
+### Implementation (index of a minimum)
+
+```haskell linenumbers
+let min_index (a: array int) (start: int) : int
+  requires { 0 <= start < length a }
+  ensures  { start <= result < length a }
+  ensures  { forall i. start <= i < length a -> a[result] <= a[i] }
+=
+  let min = ref a[start] in
+  let idx = ref start in
+  for i = start + 1 to length a - 1 do
+    if !min > a[i] then begin
+      min := a[i];
+      idx := i;
+    end;
+  done;
+  !idx
+```
+
+---
+
+### Implementation (index of a minimum)
+
+```haskell linenumbers large-code-font
+let min_index (a: array int) (start: int) : int
+  requires { 0 <= start < length a }
+  ensures  { start <= result < length a }
+  ensures  { forall i. start <= i < length a -> a[result] <= a[i] }
+=
+  let min = ref a[start] in
+  let idx = ref start in
+  for i = start + 1 to length a - 1 do
+    invariant { forall k. start <= k < i -> !min <= a[k] }
+    invariant { a[!idx] = !min }
+    if !min > a[i] then begin
+      min := a[i];
+      idx := i;
+    end;
+  done;
+  !idx
+```
+
+---
+
+### Implementation (index of a minimum)
+
+```haskell linenumbers large-code-font
+let min_index (a: array int) (start: int) : int
+  requires { 0 <= start < length a }
+  ensures  { start <= result < length a }
+  ensures  { forall i. start <= i < length a -> a[result] <= a[i] }
+=
+  let min = ref a[start] in
+  let idx = ref start in
+  for i = start + 1 to length a - 1 do
+    invariant { forall k. start <= k < i -> !min <= a[k] }
+    invariant { start <= !idx < i }
+    invariant { a[!idx] = !min }
+    assert { start < i < length a };
+    if !min > a[i] then begin
+      min := a[i];
+      idx := i;
+    end;
+  done;
+  !idx
+```
+
+---
+
+### Implementation (swap)
+
+```haskell linenumbers
+let swap (a: array int) (i j: int)
+=
+  let t = a[j] in
+  a[j] <- a[i];
+  a[i] <- t
+```
+
+---
+
+### Implementation (swap)
+
+```haskell linenumbers
+let swap (a: array int) (i j: int)
+  requires { 0 <= i <= j < length a }
+  ensures  { old a[i] = a[j] /\ old a[j] = a[i] }
+  ensures  { forall k. k <> i /\ k <> j -> old a[k] = a[k] }
+=
+  let t = a[j] in
+  a[j] <- a[i];
+  a[i] <- t
+```
+
+---
+
+### Implementation (sorting)
+
+```haskell linenumbers
+let select_sort (a: array int)
+  ensures { sorted a }
+=
+  for i = 0 to length a - 1 do
+    let idx = min_index a i in
+    swap a i idx
+  done
+```
+
+---
+
+### Implementation (sorting)
+
+```haskell linenumbers
+let select_sort (a: array int)
+  ensures { sorted a }
+=
+  for i = 0 to length a - 1 do
+    invariant { forall k l. 0 <= k <= l < i -> a[k] <= a[l] }
+    invariant { forall k l. 0 <= k < i /\ i <= l < length a -> a[k] <= a[l] }
+    let idx = min_index a i in
+    swap a i idx
+  done
+```
+
+---
+
+### Proofs
+
+![](images/Why3_select_sort.png style="height: 12rem")
+
+---
+
+# Happy prooving! :)
+
+
+<!-- Markdeep slides stuff -->
+<script>
+    markdeepSlidesOptions = {
+        aspectRatio: 16 / 9,
+        theme: 'serif',
+        fontSize: 28,
+        diagramZoom: 1.0,
+        totalSlideNumber: false,
+        progressBar: true,
+        breakOnHeadings: false
+    };
+</script>
+<style>
+    .md code {
+        --code-font: "iosevka";
+    }
+</style>
+<link rel="stylesheet" href="markdeep-slides/markdeep-slides.css">
+<script src="markdeep-slides/markdeep-slides.js"></script>
+
+<!-- Markdeep stuff -->
+<script>
+    markdeepOptions = {
+        tocStyle: 'none',
+        detectMath: false,
+        onLoad: function() {
+            initSlides();
+            loadMathJax();
+        }
+    };
+</script>
+<style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style>
+<script src="markdeep-slides/lib/markdeep/1.06/markdeep.min.js" charset="utf-8"></script>
+<script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>
+
+<!-- MathJax stuff -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        jax: ["input/TeX","output/SVG"],
+        TeX: {
+            equationNumbers: {autoNumber: "AMS"},
+            extensions: ["color.js"]
+        },
+        SVG: {
+            font: "TeX"
+        }
+    });
+</script>
+<script>
+    var mathjaxUrl = "markdeep-slides/lib/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_SVG";
+    function loadMathJax() {
+        var script = document.createElement("script");
+        script.src = mathjaxUrl;
+        document.body.appendChild(script);
+    }
+</script>
