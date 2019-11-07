@@ -32,7 +32,7 @@ Alexander Tchitchigin<br>
 ### Hoare Triples
 
 $$
-\dfrac{\{P\} S \{Q\} \quad \{Q\} T \{R\}}{\{P\} S;T \{R\}}
+\{P\} \: S \: \{Q\}
 $$
 
 ---
@@ -40,11 +40,63 @@ $$
 ### Hoare Triples
 
 $$
-\dfrac{\{P\} S \{Q\} \quad \{Q\} T \{R\}}{\{P\} S;T \{R\}}
+\dfrac{}{\{P\} \: \textbf{skip} \: \{P\}}
+$$
+
+---
+
+### Hoare Triples
+
+$$
+\dfrac{}{\{P\} \: \textbf{skip} \: \{P\}}
 $$
 
 $$
-\dfrac{\{P\} S \{Q\} \quad P' \rightarrow P \quad Q \rightarrow Q'}{\{P'\} S \{Q'\}}
+\dfrac{}{\{P[E/x]\} \: x := E \: \{P\}}
+$$
+
+---
+
+### Hoare Triples
+
+$$
+\dfrac{}{\{P\} \: \textbf{skip} \: \{P\}}
+$$
+
+$$
+\dfrac{}{\{P[E/x]\} \: x := E \: \{P\}}
+$$
+
+$$
+\dfrac{\{B \land P\} \: S \: \{Q\} \quad \{\neg B \land P\} \: T \: \{Q\}}{\{P\} \: \textbf{if} \, B \, \textbf{then} \, S \, \textbf{else} \, T \, \textbf{end} \: \{Q\}}
+$$
+
+---
+
+### Hoare Triples
+
+$$
+\dfrac{\{B \land P\} \: S \: \{P\}}{\{P\} \: \textbf{while} \, B \, \textbf{do} \, S \, \textbf{end} \: \{\neg B \land P\}}
+$$
+
+---
+
+### Hoare Triples
+
+$$
+\dfrac{\{P\} \: S \: \{Q\} \quad \{Q\} \: T \: \{R\}}{\{P\} \: S;T \: \{R\}}
+$$
+
+---
+
+### Hoare Triples
+
+$$
+\dfrac{\{P\} \: S \: \{Q\} \quad \{Q\} \: T \: \{R\}}{\{P\} \: S;T \: \{R\}}
+$$
+
+$$
+\dfrac{\{P\} \: S \: \{Q\} \quad P' \rightarrow P \quad Q \rightarrow Q'}{\{P'\} \: S \: \{Q'\}}
 $$
 
 ---
