@@ -1,0 +1,463 @@
+<meta charset="utf-8" lang="en">
+
+<style>
+.md code > .large-code-font  { font-size: 0.79em;  line-height: 120%; }
+.md code > .medium-code-font { font-size: medium; line-height: 120%; }
+.md code > .small-code-font  { font-size: small;  line-height: 120%; }
+</style>
+
+
+**A compiler to WASM in PiCat**
+
+Alexander Tchitchigin<br>
+*Positive Technologies*<br>
+<small><em>January, 2020</em></small>
+
+---
+
+# Introduction
+
+---
+
+## A compiler
+
+---
+
+## A compiler
+
+### is a translator from one language to another
+
+---
+
+*******************************************************
+*
+* .----------.        .----------.        .----------.
+* |          |        |          |        |          |
+* |  input   |        |          |        |  output  |
+* | language | -----> | compiler | -----> | language |
+* |          |        |          |        |          |
+* '----------'        '----------'        '----------'
+*
+*******************************************************
+
+---
+
+*******************************************************************************
+*
+* .-------.        .---------------------------------------.        .--------.
+* |       |        |                                       |        |        |
+* |       |        | .-------.     .--------.     .------. |        |        |
+* |       |        | | front | --> | middle | --> | back | |        |        |
+* |       |        | '-------'     '--------'     '------' |        |        |
+* |       |        |                                       |        |        |
+* | input | -----> |                compiler               | -----> | output |
+* |       |        |                                       |        |        |
+* '-------'        '---------------------------------------'        '--------'
+*
+*******************************************************************************
+
+---
+
+*******************************************************************************
+*
+* .-------.        .---------------------------------------.        .--------.
+* |       |        |   \                                   |        |        |
+* |       |        | .--\----.     .--------.     .------. |        |        |
+* |       |        | | fr\nt | --> | middle | --> | back | |        |        |
+* |       |        | '----\--'     '--------'     '------' |        |        |
+* |       |        |       \                               |        |        |
+* | input | -----> |                compiler               | -----> | output |
+* |       |        |                                       |        |        |
+* '-------'        '---------------------------------------'        '--------'
+*
+*******************************************************************************
+
+---
+
+*******************************************************
+*
+* .---------.        .----------.        .-------.
+* |         |        |          |        |       |
+* |   AST   |        |  middle  |        |  AST  |
+* |         | -----> |   end    | -----> |       |
+* |         |        |          |        |       |
+* '---------'        '----------'        '-------'
+*
+*******************************************************
+
+---
+
+*******************************************************
+*
+* .---------.        .----------.        .-------.
+* |         |        |          |        |       |
+* |   AST   |        |  middle  |        |  AST  |
+* |         | -----> |   end    | -----> |       |
+* |         |        |          |        |       |
+* '---------'        '----------'        '-------'
+*
+*******************************************************
+
+* Name resolution
+* Type checking
+* Optimization
+
+---
+
+*******************************************************
+*
+* .---------.        .----------.        .-------.
+* |         |        |          |        |       |
+* |   AST   |        |  middle  |        |  AST  |
+* |         | -----> |   end    | -----> |       |
+* |         |        |          |        |       |
+* '---------'        '----------'        '-------'
+*
+*******************************************************
+
+* ~~Name resolution~~
+* Type checking
+* ~~Optimization~~
+
+---
+
+# What it actually does
+
+---
+
+## AST
+
+---
+
+### Expressions
+
+```none linenumbers
+%% Expression =
+%% | ltrue | lfalse
+%% | ilit(i32)
+%% | flit(f32)
+%% | read(i32)
+%% | add(Expr, Expr)
+%% | sub(Expr, Expr)
+%% | mul(Expr, Expr)
+%% | div(Expr, Expr)
+%% | eq(Expr, Expr)
+%% | ne(Expr, Expr)
+%% | le(Expr, Expr)
+%% | ge(Expr, Expr)
+%% | lt(Expr, Expr)
+%% | gt(Expr, Expr)
+```
+
+---
+
+### Expressions
+
+```none linenumbers
+ex1 = $add(
+  ilit(42),
+  sub(
+    ilit(8),
+    ilit(10))).
+```
+
+---
+
+### Statements
+
+```none linenumbers
+%% Statement =
+%% | assign(i32, Expr)
+%% | expr(Expr)
+%% | if(Expr, Statement, Statement)
+%% | while(Expr, Statement)
+%% | block([Statement])
+```
+
+---
+
+### Statements
+
+```none linenumbers
+st2 = $block([
+  assign(0, mul(ilit(2), ilit(37))),
+  if(eq(read(0), ilit(123)),
+    assign(0, ilit(42)),
+    assign(0, add(read(0), ilit(10)))),
+  expr(sub(read(0), ilit(28)))
+  ]).
+```
+
+---
+
+## Typing
+
+---
+
+### Context
+
+```none linenumbers
+%% Ctx = [{N, Type}]
+
+get_var_type(N, [{N, Type} | _]) = Type.
+get_var_type(N, [_ | T]) = get_var_type(N, T).
+```
+
+---
+
+### Expressions
+
+```none linenumbers
+typed_expr(Ctx, ltrue, T)     => T = bool.
+typed_expr(Ctx, lfalse, T)    => T = bool.
+typed_expr(Ctx, ilit(_), T)   => T = int.
+typed_expr(Ctx, flit(_), T)   => T = float.
+typed_expr(Ctx, read(N), T)   => T = get_var_type(N, Ctx).
+typed_expr(Ctx, add(L, R), T) => typed_expr(Ctx, L, T), typed_expr(Ctx, R, T1), T = T1.
+typed_expr(Ctx, sub(L, R), T) => typed_expr(Ctx, L, T), typed_expr(Ctx, R, T1), T = T1.
+typed_expr(Ctx, mul(L, R), T) => typed_expr(Ctx, L, T), typed_expr(Ctx, R, T1), T = T1.
+typed_expr(Ctx, div(L, R), T) => typed_expr(Ctx, L, T), typed_expr(Ctx, R, T1), T = T1.
+typed_expr(Ctx, eq(L, R), T)  => typed_expr(Ctx, L, T2), typed_expr(Ctx, R, T1), T2 = T1, T = bool.
+typed_expr(Ctx, ne(L, R), T)  => typed_expr(Ctx, L, T2), typed_expr(Ctx, R, T1), T2 = T1, T = bool.
+typed_expr(Ctx, le(L, R), T)  => typed_expr(Ctx, L, T2), typed_expr(Ctx, R, T1), T2 = T1, T = bool.
+typed_expr(Ctx, ge(L, R), T)  => typed_expr(Ctx, L, T2), typed_expr(Ctx, R, T1), T2 = T1, T = bool.
+typed_expr(Ctx, lt(L, R), T)  => typed_expr(Ctx, L, T2), typed_expr(Ctx, R, T1), T2 = T1, T = bool.
+typed_expr(Ctx, gt(L, R), T)  => typed_expr(Ctx, L, T2), typed_expr(Ctx, R, T1), T2 = T1, T = bool.
+```
+
+---
+
+## Code generation
+
+---
+
+### Header and footer
+
+```none linenumbers
+wat_header(Type) = Res =>
+  T = expression_result(Type),
+  Res = "(module\n  (func $test " ++ T ++"\n".
+wat_footer = ")\n  (export \"test\" (func $test)))".
+
+wat_emit(Body, Type) =>
+  println(wat_header(Type) ++ Body ++ wat_footer()).
+```
+
+---
+
+### Helpers
+
+```none linenumbers
+div_inst(int) = ".div_s".
+div_inst(float) = ".div".
+
+eq_inst(int) = "i32.eq".
+eq_inst(bool) = "i32.eq".
+eq_inst(float) = "f32.eq".
+
+ne_inst(int) = "i32.ne".
+ne_inst(bool) = "i32.ne".
+ne_inst(float) = "f32.ne".
+```
+
+---
+
+### Expressions
+
+```none linenumbers
+compile_expr(Ctx, ltrue, Out) => Out = "i32.const 1\n".
+compile_expr(Ctx, lfalse, Out) => Out = "i32.const 0\n".
+compile_expr(Ctx, ilit(V), Out) => Out = "i32.const " ++ to_string(V) ++ "\n".
+compile_expr(Ctx, flit(V), Out) => Out = "f32.const " ++ to_string(V) ++ "\n".
+compile_expr(Ctx, read(N), Out) => Out = "get_local " ++ to_string(N) ++ "\n".
+compile_expr(Ctx, E@add(L, R), Out) =>
+  typed_expr(Ctx, E, T),
+  S = show_type(T),
+  compile_expr(Ctx, L, LOut),
+  compile_expr(Ctx, R, ROut),
+  Out = LOut ++ ROut ++ S ++ ".add\n".
+```
+
+---
+
+### Statements
+
+```none linenumbers
+compile_stmt(Ctx, assign(N, Expr), Out) =>
+  compile_expr(Ctx, Expr, EOut),
+  Out = EOut ++ "set_local " ++ to_string(N) ++ "\n".
+compile_stmt(Ctx, expr(Expr), Out) =>
+  compile_expr(Ctx, Expr, Out).
+compile_stmt(Ctx, if(Expr, Stmt1, Stmt2), Out) =>
+  compile_expr(Ctx, Expr, Out1),
+  compile_stmt(Ctx, Stmt1, Out2),
+  compile_stmt(Ctx, Stmt2, Out3),
+  typed(Ctx, Stmt1, _, T),
+  R = expression_result(T),
+  Out = Out1 ++ "if " ++ R ++ "\n" ++ Out2 ++ "else\n" ++ Out3 ++ "end\n".
+```
+
+---
+
+### All together
+
+```none linenumbers
+dump_locals([]) = "".
+dump_locals([{_, Type} | Tl]) = "(local " ++ show_type(Type) ++ ")\n" ++ dump_locals(Tl).
+
+compile_body(Stmt, T, Out) =>
+  typed([], Stmt, Ctx, T),
+  Locals = dump_locals(Ctx),
+  compile_stmt(Ctx, Stmt, Out1),
+  Out = Locals ++ Out1.
+
+emit_st1 =>
+  S = st1(),
+  compile_body(S, Type, B),
+  wat_emit(B, Type).
+```
+
+---
+
+### Output
+
+```none linenumbers
+(module
+  (func $test (result i32)
+(local i32)
+i32.const 2
+i32.const 37
+i32.mul
+set_local 0
+get_local 0
+i32.const 28
+i32.sub
+)
+  (export "test" (func $test)))
+```
+
+---
+
+## Factorial
+
+```none linenumbers
+fact(N) = $block([
+  assign(0, ilit(N)),
+  assign(1, ilit(1)),
+  while(
+    ge(read(0), ilit(2)),
+    block([
+      assign(1, mul(read(1), read(0))),
+      assign(0, sub(read(0), ilit(1)))])
+  ),
+  expr(read(1))]).
+```
+
+---
+
+## Factorial output
+
+```none linenumbers medium-code-font
+(module
+  (func $test (result i32)
+(local i32)
+(local i32)
+i32.const 5
+set_local 0
+i32.const 1
+set_local 1
+block
+loop
+get_local 0
+i32.const 2
+i32.ge_s
+i32.const 1
+i32.xor
+br_if 1
+get_local 1
+get_local 0
+i32.mul
+set_local 1
+get_local 0
+i32.const 1
+i32.sub
+set_local 0
+br 0
+end
+end
+get_local 1
+)
+  (export "test" (func $test)))
+```
+
+---
+
+## References
+
+Slides
+: https://github.com/gabriel-fallen/talks/tree/master/picat-wasm
+
+Code
+: https://gist.github.com/gabriel-fallen/5027a387ca75f595c03404c31d76ce86
+
+Video
+: https://www.youtube.com/playlist?list=PL-vT8sV0teWg_nSJHfN31a0Sr_hsRdahI
+
+
+<!-- Markdeep slides stuff -->
+<script>
+    markdeepSlidesOptions = {
+        aspectRatio: 16 / 9,
+        theme: 'serif',
+        fontSize: 28,
+        diagramZoom: 1.0,
+        totalSlideNumber: false,
+        progressBar: true,
+        breakOnHeadings: false
+    };
+</script>
+<style>
+    .md code {
+        --code-font: "iosevka";
+    }
+</style>
+<link rel="stylesheet" href="markdeep-slides/lib/markdeep-relative-sizes/1.07/relativize.css">
+<link rel="stylesheet" href="markdeep-slides/markdeep-slides.css">
+<script src="markdeep-slides/markdeep-slides.js"></script>
+
+<!-- Markdeep stuff -->
+<script>
+    markdeepOptions = {
+        tocStyle: 'none',
+        detectMath: false,
+        onLoad: function() {
+            initSlides();
+            loadMathJax();
+        }
+    };
+</script>
+<style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style>
+<script src="markdeep-slides/lib/markdeep/1.07/markdeep.min.js" charset="utf-8"></script>
+<script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>
+
+<!-- MathJax stuff -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        jax: ["input/TeX","output/SVG"],
+        TeX: {
+            equationNumbers: {autoNumber: "AMS"},
+            extensions: ["color.js"]
+        },
+        SVG: {
+            font: "TeX"
+        }
+    });
+</script>
+<script>
+    var mathjaxUrl = "markdeep-slides/lib/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_SVG";
+    function loadMathJax() {
+        var script = document.createElement("script");
+        script.src = mathjaxUrl;
+        document.body.appendChild(script);
+    }
+</script>
