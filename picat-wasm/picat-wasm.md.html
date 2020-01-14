@@ -15,11 +15,111 @@ Alexander Tchitchigin<br>
 
 ---
 
-# Introduction
+# PiCat
 
 ---
 
-## A compiler
+## PiCat
+
+> Picat is a simple, and yet powerful, logic-based multi-paradigm programming language aimed for general-purpose applications.
+> 
+>   -- http://picat-lang.org/
+
+---
+
+## PiCat
+
+* Predicates and unification
+* Functions
+* Uninterpreted functions
+* Local imperative programming
+* Tabling and memoization
+* Constraint programming
+* Planning
+
+---
+
+## Many faces of Fibonacci
+
+```none linenumbers
+fibi(N) = F => 
+    if N==0 then
+        F = 1
+    elseif N==1 then
+        F = 1
+    else
+        F = fibi(N-1) + fibi(N-2)
+    end.
+```
+
+---
+
+## Many faces of Fibonacci
+
+```none linenumbers
+fibf(0) = F      => F = 1.
+fibf(1) = F      => F = 1.
+fibf(N) = F, N>1 => F = fibf(N-1) + fibf(N-2).
+```
+
+---
+
+## Many faces of Fibonacci
+
+```none linenumbers
+fibfa(0) = 1.
+fibfa(1) = 1.
+fibfa(N) = fibfa(N-1) + fibfa(N-2).
+```
+
+---
+
+## Many faces of Fibonacci
+
+```none linenumbers
+fibp(0, F)      => F = 1.
+fibp(1, F)      => F = 1.
+fibp(N, F), N>1 => fibp(N-1, F1), fibp(N-2, F2), F = F1 + F2.
+```
+
+---
+
+# WebAssembly
+
+---
+
+## WebAssembly
+
+> WebAssembly (abbreviated Wasm) is a binary instruction format for a stack-based virtual machine.
+> Wasm is designed as a portable target for compilation of high-level languages like C/C++/Rust,
+> enabling deployment on the web for client and server applications.
+> 
+>   -- https://webassembly.org/
+
+---
+
+## WebAssembly
+
+* Both binary and **text** format
+* Stack-based
+* Structured control flow
+* `i32`, `i64`, `f32`, `f64`
+
+---
+
+## WebAssembly
+
+```scheme
+(module
+  (func (param $lhs i32) (param $rhs i32) (result i32)
+    local.get $lhs
+    local.get $rhs
+    i32.add))
+```
+
+---
+
+# Compiler
 
 ---
 
@@ -416,11 +516,6 @@ Video
         breakOnHeadings: false
     };
 </script>
-<style>
-    .md code {
-        --code-font: "iosevka";
-    }
-</style>
 <link rel="stylesheet" href="markdeep-slides/lib/markdeep-relative-sizes/1.07/relativize.css">
 <link rel="stylesheet" href="markdeep-slides/markdeep-slides.css">
 <script src="markdeep-slides/markdeep-slides.js"></script>
