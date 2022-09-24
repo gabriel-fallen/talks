@@ -1,0 +1,224 @@
+---
+title: "How an Old-Fashioned Math Nerd Can Take Advantage of ML Hype?"
+author: "Alexander Chichigin"
+format:
+  revealjs:
+    slide-number: 'c'
+    self-contained: true
+    theme: 'serif'
+---
+
+## Disclaimer
+
+THE AUTHOR SPECIFICALLY DISCLAIMS ANY WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
+THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
+
+
+## Old-Fashioned Math
+
+![](Lorenz_attractor.svg){fig-alt="Lorenz Attractor" fig-align="center"}
+
+
+## Math vs. ML
+
+:::: {.columns}
+
+::: {.column width="50%"}
+### ML
+* Deep Neural Networks
+* Recurrent Neural Networks
+* Residual Networks
+* Extreme Learning Machines
+* …
+:::
+
+::: {.column width="50%"}
+### Math
+* Ordinary Differential Equations
+* Partial Differential Equations
+* Stochastic Differential Equations
+* …
+:::
+
+::::
+
+
+# Neural ODEs
+
+
+## Ordinary Differential Equations
+
+$$ F(x, y, y', \dots, y^{(n-1)}) = y^{(n)} $$
+
+. . .
+
+$$ y' = F(x, y) $$
+
+
+---
+
+![](vector-field.png){fig-alt="Vector field" fig-align="center"}
+
+
+## Euler's method
+
+$$ y_{n+1} = y_n + h \times F(x_n, y_n) $$
+
+
+## Neural Networks
+
+![](ann.jpeg){fig-alt="Feed-Forward Neural Network" fig-align="center"}
+
+
+## Math View
+
+$$ \overrightarrow{y}_{n+1} = F_n \left( \mathbf{W}_n\times \overrightarrow{y}_n + \overrightarrow{b}_n \right) $$
+
+where
+
+$$ F_n \in \left\{ \sigma, ~\mathrm{ReLU}, ~\dots \right\} $$
+
+
+## Residual Neural Networks
+
+![](ResNet.png){fig-alt="ResNet" fig-align="center"}
+
+
+## Math View
+
+$$ \overrightarrow{y}_{n+1} = \overrightarrow{y}_n + F_n \left( \mathbf{W}_n\times \overrightarrow{y}_n + \overrightarrow{b}_n \right) $$
+
+. . .
+
+$$ \overrightarrow{y}(t + dt) = \overrightarrow{y}(t) + dt \times G \left( \overrightarrow{y}(t), t, \theta \right) $$
+
+. . .
+
+$$ \frac{ d\overrightarrow{y}(t) }{dt} = G \left( \overrightarrow{y}(t), t, \theta \right) $$
+
+
+## Automate!
+
+$$ \frac{ d\mathbf{y}(t)}{dt} = G \left( \mathbf{y}(t), t, \theta \right) $$
+
+$$ \mathbf{y}(t_1) = \mathtt{ODESolve}(\mathbf{y}(t_0), G, t_0, t_1, \theta) $$
+
+
+## Train?
+
+$$ L(\mathbf{y}(t_1)) = L(\mathtt{ODESolve}(\mathbf{y}(t_0), G, t_0, t_1, \theta)) $$
+
+
+## Back Propagation???
+
+### Automatic Differentiation FTW!!![^adjoint]
+
+[^adjoint]: Another option is the adjoint method.
+
+
+# Physics-Informed Neural Networks
+
+
+## ODEs Once More
+
+$$ u' = f(u, x) $$
+and
+$$ u(0) = u_0 $$
+
+
+## Approximate Numerical Solution
+
+$$ u(x) \approx NN_{\theta}(x) $$
+
+Ideally
+$$ \frac{d NN_{\theta}}{dx}(x) = f(NN_{\theta}(x), x) $$
+
+
+## The Loss
+
+$$ L(\theta) = \sum_i \left( \frac{d NN_{\theta}}{dx}(x_i) - f(NN_{\theta}(x_i), x_i) \right)^2 $$
+
+
+## Initial Condition?!
+
+$$ g_{\theta}(x) = u_0 + x \times NN_{\theta}(x) $$
+
+$$ L(\theta) = \sum_i \left( \frac{d g_{\theta}}{dx}(x_i) - f(g_{\theta}(x_i), x_i) \right)^2 $$
+
+
+## That's not PINN!
+
+$$ u_t + \mathcal{N}[u] = 0, x \in \Omega, t \in [0, T] $$
+
+$$ f := u_t + \mathcal{N}[u] $$
+
+$$ u(t, x) \approx NN_{\theta}(t, x) $$
+
+
+## Geater Loss
+
+$$ MSE = MSE_u + MSE_f $$
+where
+
+$$ MSE_u = \frac{1}{N_u} \sum_{i=1}^{N_u} \left( u(t_u^i, x_u^i) - u^i \right)^2 $$
+and
+
+$$ MSE_f = \frac{1}{N_f} \sum_{i=1}^{N_f} \left( f(t_f^i, x_f^i) \right)^2 $$
+
+
+## What about PDE parameters?
+
+$$ u_t + \mathcal{N}[u; \lambda] = 0, x \in \Omega, t \in [0, T] $$
+
+$$ f := u_t + \mathcal{N}[u; \lambda] $$
+
+$$ u(t, x) \approx NN_{\theta}(t, x) $$
+
+
+## And we need to go deeper!
+
+$$ \mathcal{N}[u(t), u(\alpha(t)), W(t), U_\theta(u, \beta(t))] = 0 $$
+
+where $\alpha(t)$ is a delay function and $W(t)$ is the Wiener process. 
+
+
+---
+
+![](ODEmeme.jpg){fig-alt="ODE meme" fig-align="center"}
+
+
+# Conclusions
+
+
+## So What About Taking Advantage?
+
+* Publications
+  - Journals
+  - Conferences
+* Industry
+  - System Identification
+  - Data-Driven Optimal Control
+* Grants
+
+
+## How an Old-Fashioned Math Nerd Can _Approach_ ML?
+
+I don't really know, but…
+
+::: {.incremental}
+
+- Optimization
+- Gradient Descent limit as a Differential Equation
+- Gaussian Processes
+- [Backward Error Analysis](https://openreview.net/forum?id=rq_Qr0c1Hyo)
+- Neural Tangent Kernels
+
+:::
+
+
+## References
+
+- [Neural Networks as ODEs](https://rkevingibson.github.io/blog/neural-networks-as-ordinary-differential-equations/)
+- [Physics-informed neural networks: A deep learning  framework for solving forward and inverse problems involving  nonlinear partial differential equations](https://doi.org/10.1016/j.jcp.2018.10.045)
+- [Universal Differential Equations for Scientific Machine Learning](https://arxiv.org/abs/2001.04385)
+- [Extreme Theory of Functional Connections: A Physics-Informed Neural Network Method for Solving Parametric Differential Equations](https://arxiv.org/abs/2005.10632)
