@@ -1,0 +1,9 @@
+name: pprog
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - pymc[version='>=5']
+  - jupyterlab
+  - statsmodels
+  - python-graphviz

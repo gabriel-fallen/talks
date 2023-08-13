@@ -1,0 +1,11 @@
+name: pprog
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - pymc[version='>=5']
+  - jupyterlab
+  - statsmodels
+  - m2w64-toolchain
+  - python-graphviz
+prefix: C:\ProgramData\Miniconda3\envs\pprog

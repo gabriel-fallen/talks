@@ -1,0 +1,12 @@
+digraph {
+  node [shape="box"];
+
+  BI  [label="Bayesian Inference\nMCMC, HMC, NUTS"];
+  PGM [label="Programmatic building of PGMs"];
+  AD  [label="Automatic Differetiation"];
+  PP  [label="Probabilistic Programming"];
+
+  BI  -> PP;
+  PGM -> PP;
+  AD  -> PP;
+}
