@@ -1,0 +1,489 @@
+---
+title: "Verification Overview"
+author: "Alexander Chichigin"
+format: revealjs
+---
+
+## Definition
+
+::: {.incremental}
+Verification.
+: The evaluation of whether or not a product, service, or system complies with a regulation, requirement, specification, or imposed condition.
+:::
+
+
+## Verification
+
+```{dot}
+digraph V1 {
+    rankdir="BT"
+    node [shape=box]
+
+    Implementation -> Specification
+}
+```
+
+
+## Specifying What?
+
+```{dot}
+digraph V2 {
+    node [shape=box]
+
+    Requirements -> {Functional, "Non-Functional"}
+}
+```
+
+
+## Specifying How?
+
+::: {.incremental}
+- Prose
+- Examples
+- Scenarious
+- First-Order Predicates
+- Higher-Order Predicates
+- Temporal Predicates
+- Probabilistic Predicates
+- Programs
+:::
+
+
+## Relational Specification
+
+```alloy
+sig FileStore {
+  map : Path → File
+}
+
+pred FileStoreInvariant[fs: FileStore]{
+  all path : RelCalc/dom[fs.map] {
+    isElemFileStore[path.dirName, fs] and
+    isDirectory[fs.map[path.dirName]]
+  }
+}
+```
+
+
+## Higher-Order Specification
+
+```hol
+fun sorted :: "('a::linorder) list ⇒ bool" where
+  "sorted  []    = True"
+| "sorted (x#xs) = ((∀y ∈ set xs. x ≤ y) ∧ sorted xs)"
+
+definition spec f ≡ "∀xs. sorted (f l) ∧ mset (f xs) = mset xs"
+```
+
+
+## Temporal Specification
+
+```tla+
+---- MODULE clock ----
+EXTENDS TLC, Integers
+
+VARIABLES hour
+
+Init == hour = 12
+
+Next ==
+  IF hour = 23
+  THEN hour' = 0
+  ELSE hour' = hour + 1
+
+\* Our system starts at Init
+\* And evolves according to Next
+Spec == Init /\ [][Next]_hour /\ WF_hour(Next)
+
+Liveness == <>(hour = 15)
+
+====
+```
+
+
+## Methods
+
+```{dot}
+digraph V2 {
+    node [shape=box]
+
+    Verification -> {Testing, Analysis}
+}
+```
+
+
+## For Example
+
+- Unit Testing
+- Functional Testing
+- Regression Testing
+- Property-Based Testing
+- Fuzzying
+- Linting
+- Symbolic Execution
+- Proof-Carrying Code
+
+
+## Formal Verification
+
+```{dot}
+digraph FV1 {
+    rankdir="BT"
+    node [shape=box]
+
+    S [label="Formal Specification"]
+
+    Implementation -> S [label="Proof Object"]
+}
+```
+
+
+## Verification &amp; Validation
+
+```{dot}
+digraph FVnV1 {
+    rankdir="BT"
+    node [shape=box]
+
+    S [label="Formal Specification"]
+
+    Implementation -> S [label="Proof Object"]
+    S -> Expectations [label="Validation", dir="both"]
+
+    { rank=same S Expectations}
+}
+```
+
+
+## Another Definition
+
+Validation.
+: The assurance that a product, service, or system meets the needs of the customer and other identified stakeholders.
+
+
+## More Layers
+
+```{dot}
+digraph Layers {
+    rankdir="BT"
+    node [shape=box]
+
+    A [label="Actual Requirements"]
+    S [label="Formal Specification"]
+    D [label="Design Model"]
+
+    Implementation -> D -> S -> A
+}
+```
+
+
+## Verification Areas
+
+```{dot}
+digraph V2 {
+    node [shape=box]
+
+    Verification -> {Hardware, Software}
+}
+```
+
+
+## Software Verification
+
+```{dot}
+digraph V2 {
+    node [shape=box]
+
+    V [label="Software Verification"]
+    M [label="Model Checking"]
+    D [label="Deductive Verification"]
+
+    V -> {M, D}
+}
+```
+
+
+## Static Program Analysis anyone?
+
+### What's the difference from Verification?
+
+::: {.incremental}
+- Not necessarily correctness
+  - Linters --- style
+  - Incorrectness Logic --- bugs
+- Not necessarily sound
+  - SAST
+:::
+
+
+## Model Checking {.smaller}
+
+::: {.incremental}
+- **Finate Model**-based, not symbolic
+- Symbolic Model Checking :trollface:
+- _Bounded_ checking
+- **Temporal** properties
+  - Safety
+  - Progress
+  - Linear Temporal Logic
+- No to little additional annotations
+  - Little control over the process or issues
+- Protocol verification
+:::
+
+
+## Tools
+
+- [Alloy](http://alloytools.org/)
+- [CBMC](https://diffblue.github.io/cbmc/)
+- [NuSMV](https://nusmv.fbk.eu/)
+- [PRISM](http://www.prismmodelchecker.org/)
+- [TLA+](https://lamport.azurewebsites.net/tla/tla.html)
+
+
+## Alloy
+
+![Alloy Evaluator](alloy-evaluator.png)
+
+
+## Checking a Program
+
+```c
+void prove_unbounded_liveness(game_state_t state)
+{
+  if (!formal_state_valid(&state))
+    return;
+
+  critic_score_t old_score = formal_critic(&state);
+
+  for (int i = 0; i < MAX_PROGRESS_DEPTH; i++)
+  {
+    game_action_t action;
+    formal_actor(&state, &action);
+    // assert(formal_action_valid(&state, &action));
+
+    if (action.op == OP_FINISH)
+      return;
+
+    apply_action(&state, &action);
+  }
+
+  critic_score_t new_score = formal_critic(&state);
+
+  assert(lt_scores(old_score, new_score));
+}
+```
+
+## Deductive Verification
+
+```{dot}
+digraph V2 {
+    node [shape=box]
+
+    A [label="Automatic"]
+    M [label="Automated"]
+    D [label="Deductive Verification"]
+
+    D -> {A, M}
+}
+```
+
+
+## Automatic Deduction 1
+
+- Superposition solvers
+  - First-Order Logic with Equality
+  - Vampire
+  - SPASS
+  - E
+
+
+## Automatic Deduction 2
+
+- SAT
+  - Propositional Logic
+- SMT
+  - Various Fragments of FOL
+  - Arithmetic &mdash; Liear or Otherwise
+  - Boolean Vectors
+  - CVC 4 &amp; 5
+  - Z3
+  - Boolector
+
+
+## SMT-LIB LeftPad
+
+```smt
+(declare-const s String)
+(declare-const n Int)
+(declare-const c String)
+
+(declare-const out String)
+(declare-const prefix String)
+
+(define-fun max ((x Int) (y Int)) Int (ite (< x y) y x))
+
+(assert (= (str.len c) 1))
+
+(define-fun is-repeated-char ((st String) (ch String)) Bool
+  (forall ((i Int))
+    (implies
+      (and (>= i 0) (< i (str.len st)))
+      (= (str.at st i) ch))))
+
+(define-fun prefix-length () Int (max 0 (- n (str.len s))))
+
+(assert (= (str.len prefix) prefix-length))
+(assert (is-repeated-char prefix c))
+
+(assert (= out (str.++ prefix s)))
+```
+
+
+## Manual Deduction 😁
+
+### And Induction 😊
+
+- Simple Type Theory/HOL
+  - HOL4
+  - HOLight
+  - Isabelle/HOL
+- Automation through custom tactics and external solvers
+
+
+## Isabelle/HOL LeftPad
+
+```isabelle
+definition isPadded where "isPadded padChar unpadded padded
+    ≡ ∃ n. set (take n padded) ⊆ { padChar } ∧ drop n padded = unpadded"
+
+definition leftPad where "leftPad padChar targetLength s
+  ≡ replicate (targetLength - length s) padChar @ s"
+
+
+lemma isPadded_leftPad: "isPadded padChar s (leftPad padChar targetLength s)"
+  unfolding isPadded_def leftPad_def by (intro exI [where x = "targetLength - length s"], auto)
+
+lemma length_leftPad: "length (leftPad padChar targetLength s) = max targetLength (length s)"
+  unfolding leftPad_def by auto
+```
+
+
+## More Manual Deduction 😁
+
+- Martin-Löf Type Theory
+- Calculus of ([Co]Inductive) Constructions (CoC/CIC/CoCIC)
+- HoTT/Cubical/H.O.T.T.
+- Proof Assistants/Dependently-Typed Programming
+  - Coq
+  - Adga
+  - Lean 4
+  - Idris 2
+
+
+## Lean 4 LeftPad
+
+```haskell
+def leftpad (n : Nat) (a : α) (l : List α) : List α :=
+  List.replicate (n - l.length) a ++ l
+
+
+theorem leftpad_length (n : Nat) (a : α) (l : List α) :
+    (leftpad n a l).length = max n (l.length) := by
+  simp [leftpad, Nat.max_def]
+  unfold ite
+  cases (Nat.decLe n (List.length l)) with
+  | isTrue h =>
+    dsimp
+    rw [Nat.sub_eq_zero_of_le]
+    . simp
+    . assumption
+  | isFalse h =>
+    dsimp
+    rw [Nat.sub_add_cancel]
+    apply Nat.le_of_lt (Nat.gt_of_not_le h)
+
+
+theorem prefix_concat [BEq α] [LawfulBEq α] (l m : List α) :
+    l.isPrefixOf (l ++ m) := by
+  induction l with
+  | nil => simp [List.isPrefixOf]
+  | cons x xs ih => simp [List.isPrefixOf, ih]
+
+theorem leftpad_prefix [BEq α] [LawfulBEq α] (n : Nat) (a : α) (l : List α) :
+    (List.replicate (n - l.length) a).isPrefixOf (leftpad n a l) := by
+  simp [leftpad]
+  apply prefix_concat (List.replicate (n - List.length l) a) l
+
+
+theorem suffix_concat [BEq α] [LawfulBEq α] (l m : List α) :
+    m.isSuffixOf (l ++ m) := by
+  unfold List.isSuffixOf
+  rw [List.reverse_append]
+  apply prefix_concat (List.reverse m) (List.reverse l)
+
+theorem leftpad_suffix [BEq α] [LawfulBEq α] (n : Nat) (a : α) (l : List α) :
+    l.isSuffixOf (leftpad n a l) := by
+  simp [leftpad]
+  apply suffix_concat
+```
+
+
+## Common Techniques
+
+- Refinement
+- Bisimulation
+- Program Logic
+  - Hoare Logic
+  - Incorrectness Logic
+  - (Concurrent) Separation Logic
+
+## Dafny LeftPad
+
+```eiffel
+method LeftPad(c: char, n: int, s: seq<char>) returns (v: seq<char>)
+ensures |v| == max(n, |s|)
+ensures forall i :: 0 <= i < n - |s| ==> v[i] == c
+ensures forall i :: 0 <= i < |s| ==> v[max(n - |s|, 0)+i] == s[i]
+{
+
+    var pad, i := max(n - |s|, 0), 0;
+    v := s;
+    while i < pad decreases pad - i
+    invariant 0 <= i <= pad
+    invariant |v| == |s| + i
+    invariant forall j :: 0 <= j < i ==> v[j] == c
+    invariant forall j :: 0 <= j < |s| ==> v[i+j] == s[j]
+    {
+        v := [c] + v;
+        i := i + 1;
+    }
+}
+```
+
+
+## Success Stories 😊
+
+- [CompCert](https://compcert.org)
+- [CakeML](https://cakeml.org)
+- seL4
+- [Project Everest](https://project-everest.github.io/)
+  - Mozilla Firefox
+  - Linux Kernel
+  - Wireguard VPN
+  - Windows Hyper-V
+
+
+## Application Areas
+
+- Algorithm Verification
+- Protocol Verification
+- Program Verification
+
+
+## Related Fields
+
+- Correct-by-Construction Programs
+- Model-Based Development
+- Program Repair
+- Whatever-Guided Program Synthesis
